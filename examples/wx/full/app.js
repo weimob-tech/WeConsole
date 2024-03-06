@@ -44,7 +44,7 @@ addCustomAction({
                                               {
                                                   block: true,
                                                   items: [
-                                                      '门店信息：',
+                                                      '门店信息',
                                                       {
                                                           type: 'text',
                                                           content: '='
@@ -78,3 +78,21 @@ console.log('console.log 来啦');
 console.error('console.error 来啦');
 console.info('console.info 来啦');
 console.warn('console.warn 来啦');
+
+console.log(
+    '数字',
+    123,
+    '布尔',
+    true,
+    '字符串',
+    '函数',
+    () => {
+        console.log('123');
+    },
+    '类',
+    class Box {
+        show() {
+            console.log('123');
+        }
+    }
+);

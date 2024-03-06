@@ -7,7 +7,21 @@ const consoleType = {
 Component({
     data: {
         requesting: false,
-        message: 'hi demo'
+        message: 'hi demo',
+        tabs: [
+            {
+                name: '1',
+                value: '1'
+            },
+            {
+                name: '2',
+                value: '2'
+            }
+        ],
+        name: 456,
+        val: {
+            age: 123
+        }
     },
     created() {
         this.storageIndex = 0;
@@ -22,6 +36,10 @@ Component({
                     this.consoleType === 3 ? new Error(Date.now()) : Date.now(),
                     global
                 );
+                xhs.showToast({
+                    title: `已打印console.${consoleType[this.consoleType]}，请前往Console查看`,
+                    icon: 'none'
+                });
                 this.consoleType++;
                 this.consoleType = this.consoleType > 3 ? 0 : this.consoleType;
                 return;

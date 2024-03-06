@@ -48,11 +48,6 @@
     white-space: pre-wrap;
 }
 
-.ca-container {
-    position: relative;
-    height: 100%;
-}
-
 .ca-grid,
 .ca-component {
     position: absolute;
@@ -61,4 +56,8 @@
     bottom: 0;
     left: 0;
     border-top: 1px solid #ededed !important;
+}
+
+.case-tab-panel {
+    height: 100%;
 }

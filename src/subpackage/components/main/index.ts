@@ -1,4 +1,3 @@
-import type { MpNameValue } from '@/types/common';
 import { getCustomActions } from '@/sub/modules/custom-action';
 import { WeConsoleEvents } from '@/types/scope';
 import { wcScope } from '@/main/config';
@@ -16,14 +15,23 @@ import {
     showToast
 } from 'cross-mp-power';
 import { getElementId } from '@/sub/modules/element';
+import type { MpEvent } from '@/types/view';
 
 const WcScope = wcScope();
 
-const getSysTabs = (): MpNameValue<string>[] =>
-    getCustomActions().map((item) => ({
-        name: item.title || item.id,
-        value: item.id
-    }));
+const getSysTabs = () =>
+    getCustomActions().reduce(
+        (sum, item, index) => {
+            sum.map[String(index)] = item.id;
+            sum.list.push({
+                name: item.title || item.id,
+                value: index,
+                id: item.id
+            });
+            return sum;
+        },
+        { map: {}, list: [] as any[] }
+    );
 
 class MainComponent extends MpComponent {
     canvasCtx?: any;
@@ -64,9 +72,9 @@ class MainComponent extends MpComponent {
         fullScreen: MainStateController.getState('fullScreen') || false,
         activeTabIndex: MainStateController.getState('activeTabIndex') || 0,
         isFullScreenPhone: MainStateController.getState('isFullScreenPhone') || false,
-        winWidth: MainStateController.getState('winWidth') || 0,
-        winHeight: MainStateController.getState('winHeight') || 0,
-        tabMountState: MainStateController.getState('tabMountState', {}),
+        tabMountState: MainStateController.getState('tabMountState', {
+            [`s${MainStateController.getState('activeTabIndex') || 0}`]: 1
+        }),
         tabs: [
             {
                 name: 'Console',
@@ -91,7 +99,9 @@ class MainComponent extends MpComponent {
         ],
         sysTabs: getSysTabs(),
         activeSysTab: MainStateController.getState('activeSysTab') || 0,
-        sysTabMountState: MainStateController.getState('sysTabMountState', {})
+        sysTabMountState: MainStateController.getState('sysTabMountState', {
+            [`s${MainStateController.getState('activeSysTab') || 0}`]: 1
+        })
     };
     attached() {
         const selfId = getElementId(this);
@@ -159,8 +169,6 @@ class MainComponent extends MpComponent {
             'fullScreen',
             'activeTabIndex',
             'isFullScreenPhone',
-            'winWidth',
-            'winHeight',
             'tabMountState',
             'activeSysTab',
             'sysTabMountState'
@@ -193,8 +201,8 @@ class MainComponent extends MpComponent {
         MainStateController.setState('activeSysTab', e.detail);
         MainStateController.setState('sysTabMountState', JSON.parse(JSON.stringify(this.data.sysTabMountState)));
     }
-    handMovableEnd(e) {
-        const state = JSON.parse(e);
+    handMovableEnd(e: Required<MpEvent<{ x: number; y: number }>>) {
+        const state = e.detail;
         setStorage('wcconsole_xy', {
             x: state.x,
             y: state.y
@@ -322,26 +330,20 @@ class MainComponent extends MpComponent {
         });
     }
     init() {
-        if (!MainStateController.getState('winHeight')) {
-            const res = getSystemInfo();
-            this.$mx.Tool.$updateData({
-                isFullScreenPhone: res.statusBarHeight && res.statusBarHeight > 20,
-                winWidth: res.windowWidth - 20,
-                winHeight: res.windowHeight - 20
-            });
-            // 默认情况下，如果是打开调试时，才显示icon
-            if (!('visible' in WcScope)) {
-                MainStateController.setState(
-                    'showIcon',
-                    checkDebugEnabled() || (getCurrentEnvVersion() !== '?' && getCurrentEnvVersion() !== 'release')
-                );
-            } else {
-                MainStateController.setState('showIcon', WcScope.visible);
-            }
-            MainStateController.setState('winHeight', this.data.winHeight);
-            MainStateController.setState('winWidth', this.data.winWidth);
-            MainStateController.setState('isFullScreenPhone', this.data.isFullScreenPhone);
+        const res = getSystemInfo();
+        this.$mx.Tool.$updateData({
+            isFullScreenPhone: res.statusBarHeight && res.statusBarHeight > 20
+        });
+        // 默认情况下，如果是打开调试时，才显示icon
+        if (!('visible' in WcScope)) {
+            MainStateController.setState(
+                'showIcon',
+                checkDebugEnabled() || (getCurrentEnvVersion() !== '?' && getCurrentEnvVersion() !== 'release')
+            );
+        } else {
+            MainStateController.setState('showIcon', WcScope.visible);
         }
+        MainStateController.setState('isFullScreenPhone', this.data.isFullScreenPhone);
         let handPromise = Promise.resolve();
         if (!MainStateController.getState('handX')) {
             handPromise = getStorage<{ x: number; y: number }>('wcconsole_xy')
