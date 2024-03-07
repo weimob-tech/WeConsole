@@ -5,8 +5,8 @@ import { parseXML } from './parse';
 const translatorAttr = (attr: FxNode, node: FxNode) => {
     if (attr.name?.startsWith('wx:')) {
         attr.name = `s-${attr.name.substring(3)}`;
-        if (attr.name === 's-for') {
-            // 百度循环没有{{}}
+        if (attr.name === 's-for' || attr.name === 's-if' || attr.name === 's-elif') {
+            // 百度条件和循环没有{{}}
             let content = attr.content as string;
             content = content.substring(2, content.length - 2).trim();
             attr.content = content;
