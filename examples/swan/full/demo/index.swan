@@ -1,3 +1,4 @@
+<import src="./tpl.swan"></import>
 <view class="action-list">
     <view class="action" bind:tap="callWxMethod" data-method="console">随机console</view>
     <view class="action" bind:tap="callWxMethod" data-method="showToast">swan.showToast</view>
@@ -7,3 +8,5 @@
     <view class="action {{requesting?'lock':''}}" bind:tap="callWxMethod" data-method="request">swan.request{{requesting?'(发送中...)':''}}</view>
 </view>
 <demo2></demo2>
+
+<template is="tp"></template>
