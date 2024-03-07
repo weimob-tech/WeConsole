@@ -221,3 +221,36 @@ export const rpxToPx = (rpxVal: number): number => {
 /** 获取小程序内weconsole已经监控到的所有的App/Page/Component实例 */
 export const getWcControlMpViewInstances = (): MpViewInstance[] =>
     wcScopeSingle('MpViewInstances', () => []) as MpViewInstance[];
+
+export const setProp = (() => {
+    const SupportDesc = typeof Object.getOwnPropertyDescriptor === 'function';
+    const normalSetter = (target: any, prop: string, val: any) => {
+        if (typeof Reflect !== 'undefined') {
+            Reflect.set(target, prop, val);
+        } else {
+            target[prop] = val;
+        }
+    };
+    if (SupportDesc) {
+        return (target: any, prop: string, val: any) => {
+            const desc = Object.getOwnPropertyDescriptor(target, prop);
+            if (!desc) {
+                normalSetter(target, prop, val);
+                return;
+            }
+            if (typeof desc.get === 'function') {
+                // const oldGet = desc.get;
+                desc.get = function get() {
+                    return val;
+                };
+                Object.defineProperty(target, prop, desc);
+                return;
+            }
+            desc.value = val;
+            Object.defineProperty(target, prop, desc);
+        };
+    }
+    return (target: any, prop: string, val: any) => {
+        target[prop] = val;
+    };
+})();

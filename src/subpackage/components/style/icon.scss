@@ -78,10 +78,14 @@
 
 @mixin ic-info($color: $cr-info, $color2: #fff) {
     &.wic-info::before {
-        top: 0;
-        left: 0;
-        color: $color;
-        content: '●';
+        top: 50%;
+        left: 50%;
+        width: 24rpx;
+        height: 24rpx;
+        content: '';
+        background-color: $color;
+        border-radius: 50%;
+        transform: translateX(-50%) translateY(-50%);
     }
 
     &.wic-info::after {

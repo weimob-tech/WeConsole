@@ -2,7 +2,7 @@ import { hookFunc, replaceFunc } from '@mpkit/func-helper';
 import type { MkFuncHook, MkReplaceFuncStore, MpViewFactory } from '@mpkit/types';
 import { HookScope } from '@/types/common';
 import type { IHooker } from '@/types/hook';
-import { log } from './util';
+import { log, setProp } from './util';
 import { getUIConfig, wcScopeSingle } from '../config';
 import type { AnyFunction } from '@/types/util';
 
@@ -85,17 +85,25 @@ export class Hooker implements IHooker {
                 if (CONSOLE_METHODS.indexOf(prop) !== -1 && typeof console[prop] === 'function') {
                     const mehtod = console[prop].bind(console);
                     org[prop] = mehtod;
-                    console[prop] = replaceFunc(
-                        mehtod,
-                        hookFunc(mehtod, false, this.hooks, {
-                            funcName: prop,
-                            scope: this.scope,
-                            ...otherState
-                        }).func,
-                        (store) => {
-                            this.stores.push(store);
-                        }
-                    );
+                    try {
+                        setProp(
+                            console,
+                            prop,
+                            replaceFunc(
+                                mehtod,
+                                hookFunc(mehtod, false, this.hooks, {
+                                    funcName: prop,
+                                    scope: this.scope,
+                                    ...otherState
+                                }).func,
+                                (store) => {
+                                    this.stores.push(store);
+                                }
+                            )
+                        );
+                    } catch (error) {
+                        org[prop](`console.${prop}重写失败，当前环境不支持重写操作`, error);
+                    }
                 }
             }
             (console as any).org = org;
@@ -221,7 +229,9 @@ export class Hooker implements IHooker {
                 Object.defineProperty(oldWx, prop, {
                     value: val
                 });
-            } catch (error) {}
+            } catch (error) {
+                console.error(`${BUILD_TARGET}.${prop}重写失败`, error);
+            }
         };
         const config = getUIConfig();
         const onlyHookApiNames: Record<string, 1> = {};

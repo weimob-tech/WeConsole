@@ -1,16 +1,17 @@
 {
     "appid": "17767960",
     "setting": {
-        "urlCheck": true
+        "urlCheck": false
     },
     "compilation-args": {
         "common": {
             "enhance": true,
-            "quickPreview": true
+            "quickPreview": true,
+            "quickCompile": false,
+            "useThread": false
         },
-        "forceChanged": {
-            "quickPreview": true
-        }
+        "forceChanged": {},
+        "useOldCompiler": true
     },
     "project-create-info": {
         "dev-tool-version": "4.33.0-rc",
