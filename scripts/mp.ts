@@ -5,6 +5,7 @@ import { renameSync } from 'fs';
 import { toXhsML } from './translator/xhs';
 import { toAliXml } from './translator/ali';
 import { MpXmlFileSuffix } from './vars';
+import { toSwanXML } from './translator/swan';
 
 const cssFileSuffix = {
     wx: 'wxss',
@@ -71,6 +72,10 @@ export const compilerMpResource = (
                 }
                 if (targetPlatform === 'my') {
                     writeFile(newFileName, toAliXml(xml));
+                    return;
+                }
+                if (targetPlatform === 'swan') {
+                    writeFile(newFileName, toSwanXML(xml));
                     return;
                 }
                 return;

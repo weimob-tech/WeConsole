@@ -13,7 +13,7 @@ const translatorAttr = (attr: FxNode, node: FxNode) => {
     }
 
     if (node.name === 'wxs' && attr.name === 'src' && attr.content) {
-        attr.content = `${attr.content.substring(0, attr.content.length - 4)}.SJS`;
+        attr.content = `${attr.content.substring(0, attr.content.length - 4)}.sjs`;
         return;
     }
 };
