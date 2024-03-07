@@ -24,5 +24,8 @@
             "extensionJsVersion": "1.21.2"
         }
     },
-    "projectname": "WeConsole示例"
+    "projectname": "WeConsole示例",
+    "preview": {
+        "packageId": 1710347
+    }
 }

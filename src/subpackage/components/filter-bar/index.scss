@@ -35,7 +35,8 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    height: 100%;
+    height: $ht-filter-bar;
+    box-sizing: border-box;
     padding: 0 15rpx !important;
 }
 
@@ -89,7 +90,7 @@
 
 .fc-filter-main,
 .fc-filter-actions {
-    height: 100%;
+    height: $ht-filter-bar;
 }
 
 .fc-filter-main {

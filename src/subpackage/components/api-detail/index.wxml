@@ -7,7 +7,7 @@
     <view class="btn-link fc-status-action" bindtap="close">关闭</view>
 </view>
 <view wx:elif="{{detail && detail.id && selfHash}}" class="fc-detail">
-    <tabs tabs="{{tabs}}" active="{{activeTabIndex}}" size="small" bind:change="setTab">
+    <tabs tabs="{{tabs}}" active="{{activeTabIndex}}" size="small" bind:change="setTab" style="height:100%">
         <view slot="headBefore" class="fc-detail-action right-border" bindtap="close">
             <view class="fc-detail-close wic-close"></view>
         </view>

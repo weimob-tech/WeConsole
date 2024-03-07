@@ -4,7 +4,7 @@
             <slot name="headBefore"></slot>
         </view>
         <view wx:if="{{headScroll}}" class="fc-tabs-head-scroll">
-            <scroll-view scroll-into-view="{{toView}}" scroll-x="{{direction==='horizontal'}}" scroll-y="{{direction!=='horizontal'}}">
+            <scroll-view scroll-into-view="{{toView}}" scroll-x="{{direction==='horizontal'}}" scroll-y="{{direction!=='horizontal'}}" style="{{direction==='horizontal'?'height: 100%;':''}}">
                 <view class="fc-tabs-heads">
                     <view id="tabTitle_{{index}}" wx:for="{{tabs}}" class="fc-tab-title {{active===index?'active':''}}" wx:key="value" bindtap="tapTab" data-tab="{{index}}">
                         {{item.name}}

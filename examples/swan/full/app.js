@@ -96,3 +96,8 @@ console.log(
         }
     }
 );
+
+console.log('global=', typeof global !== 'undefined' ? global : null);
+console.log('globalThis=', typeof globalThis !== 'undefined' ? globalThis : null);
+console.log('swanGlobal=', typeof swanGlobal !== 'undefined' ? swanGlobal : null);
+console.log('__DEV__=', typeof __DEV__ !== 'undefined' ? __DEV__ : null);
