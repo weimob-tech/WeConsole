@@ -2,10 +2,9 @@ import type { MkFuncHook } from '@mpkit/types';
 import { uuid } from '@mpkit/util';
 import type { WeFuncHookState } from '@/types/hook';
 import { HookScope, MethodExecStatus } from '@/types/common';
-import { $$getStack, getWcControlMpViewInstances, isMpViewEvent, log, now } from './util';
+import { $$getStack, getWcControlMpViewInstances, isMpViewEvent, log, now, setPageMockId } from './util';
 import { Hooker } from './hooker';
 import { hookApiMethodCallback } from 'cross-mp-power';
-import { wcScope } from '../config';
 export const FuncIDHook: MkFuncHook<WeFuncHookState> = {
     before(state) {
         if (!state.state.id) {
@@ -165,12 +164,7 @@ export const MpViewInsDestroyMarkHook: MkFuncHook<WeFuncHookState> = {
 export const MpViewInitLifeHook: MkFuncHook<WeFuncHookState> = {
     before(state) {
         if (BUILD_TARGET === 'swan') {
-            if (!state.ctx.__wcMockId__ && !state.ctx.nodeId) {
-                let pagePlusId = wcScope().pagePlusId || 0;
-                pagePlusId++;
-                wcScope().pagePlusId = pagePlusId;
-                state.ctx.__wcMockId__ = String(pagePlusId);
-            }
+            setPageMockId(state.ctx);
         }
         // 界面上暂时没有用到setData的地方，先注释重写setData和 triggerEvent的逻辑
         // if (state.ctx.setData || state.ctx.triggerEvent) {

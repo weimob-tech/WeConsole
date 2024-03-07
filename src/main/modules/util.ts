@@ -1,6 +1,6 @@
 import type { AnyFunction, WcListFilterHandler } from '@/types/util';
 import type { MpStackInfo } from '@/types/common';
-import { wcScopeSingle } from '../config';
+import { wcScope, wcScopeSingle } from '../config';
 import type { MpViewInstance } from 'typescript-mp-component';
 import { getSystemInfo } from 'cross-mp-power';
 
@@ -254,3 +254,13 @@ export const setProp = (() => {
         target[prop] = val;
     };
 })();
+
+export const setPageMockId = (page: any) => {
+    if (page.nodeId || page.__wcMockId__) {
+        return;
+    }
+    let pagePlusId = wcScope().pagePlusId || 0;
+    pagePlusId++;
+    wcScope().pagePlusId = pagePlusId;
+    page.__wcMockId__ = String(pagePlusId);
+};
