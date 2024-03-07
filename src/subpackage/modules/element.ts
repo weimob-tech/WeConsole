@@ -1,6 +1,5 @@
 import { toHump, isApp, getMpViewType, getWcControlMpViewInstances } from '@/main/modules/util';
 import type { MpAttrNode, MpElement } from '@/types/element';
-import { uniq } from './util';
 import {
     getCurrentAppId,
     getCurrentAppVersion,
@@ -49,48 +48,40 @@ const getGroup = (children: MpElement[]): MpElement[] => {
     return res;
 };
 
+const uniqFilter = <T = any>(list: T[], filter: (item: T) => boolean) => {
+    const map = new Map();
+    return list.reduce((sum: T[], item) => {
+        if (filter(item) && !map.has(item)) {
+            map.set(item, 1);
+            sum.push(item);
+        }
+        return sum;
+    }, []);
+};
+
 const isPage = (vm) => {
     // TODO: 适配多渠道与Component方式注册page的方式
     return getMpViewType(vm) === 'Page';
 };
 
-// 只有不支持selectOwnerComponent时才会调用此方法
-const getPageAllChildren = (page) => {
-    return getWcControlMpViewInstances().filter((item) => item !== page && !isApp(item) && isPageChild(item, page));
+const getPageChildren = (page) => {
+    return uniqFilter(getWcControlMpViewInstances(), (item) => isPageChild(item, page));
+};
+
+const getComponentChildren = (component) => {
+    return uniqFilter(getWcControlMpViewInstances(), (item) => isComponentChild(item, component));
 };
 
 export const getChildrenElements = (vw: any, group?: string, getPages?: () => any[]): Promise<MpElement[]> => {
-    const vwType = getMpViewType(vw);
-    if (vwType === 'App') {
+    let children: MpViewInstance[];
+
+    if (isApp(vw)) {
         const pages = (getPages || getCurrentPages)() as any[];
-        if (!pages || !pages.length) {
-            return Promise.resolve([]);
-        }
-        return Promise.all(pages.map((item) => getElement(item)));
-    }
-
-    let children: MpViewInstance[] = [];
-    if (BUILD_TARGET !== 'xhs' && !supportSelectOwnerComponent()) {
-        if (vwType === 'Component') {
-            children = [];
-        } else if (isPage(vw)) {
-            children = getPageAllChildren(vw);
-        }
-    }
-
-    if (BUILD_TARGET === 'xhs' || supportSelectOwnerComponent()) {
-        const MpViewInstances = getWcControlMpViewInstances();
-        children = uniq(
-            MpViewInstances.filter((item) => {
-                if (group) {
-                    return item.is === group;
-                }
-                if (BUILD_TARGET === 'xhs') {
-                    return item !== vw && (item as any).ownerComponent && (item as any).ownerComponent === vw;
-                }
-                return item.selectOwnerComponent?.() === vw;
-            })
-        );
+        children = pages || [];
+    } else if (isPage(vw)) {
+        children = getPageChildren(vw);
+    } else {
+        children = getComponentChildren(vw);
     }
 
     return Promise.all(children.map((item) => getElement(item))).then((list) => {
@@ -144,19 +135,41 @@ const isPageChild = (component: any, page: any): boolean => {
     if (BUILD_TARGET === 'xhs') {
         return component.ownerComponent === page;
     }
+    if (BUILD_TARGET === 'swan') {
+        return component.pageinstance === page;
+    }
+    if (supportSelectOwnerComponent()) {
+        return component.selectOwnerComponent() === page;
+    }
+    return true;
+};
+
+const isComponentChild = (component: any, parentComponent: any) => {
+    if (BUILD_TARGET === 'xhs') {
+        return component.ownerComponent === parentComponent;
+    }
+    if (BUILD_TARGET === 'swan') {
+        return component.ownerId === parentComponent.nodeId;
+    }
+    if (supportSelectOwnerComponent()) {
+        return component.selectOwnerComponent() === parentComponent;
+    }
     return false;
 };
 
-export const hasChild = (vw: any): boolean => {
+const hasChild = (target: any): boolean => {
     const MpViewInstances = getWcControlMpViewInstances();
+    if (isPage(target)) {
+        return MpViewInstances.some((item) => isPageChild(item, target));
+    }
     if (BUILD_TARGET === 'xhs') {
-        return MpViewInstances.some((item) => (item as any).ownerComponent === vw);
+        return MpViewInstances.some((item) => (item as any).ownerComponent === target);
+    }
+    if (BUILD_TARGET === 'swan') {
+        return MpViewInstances.some((item) => (item as any).ownerId === target.nodeId);
     }
     if (supportSelectOwnerComponent()) {
-        return MpViewInstances.some((item) => item.selectOwnerComponent?.() === vw && item !== vw);
-    }
-    if (isPage(vw)) {
-        return MpViewInstances.some((item) => isPageChild(item, vw));
+        return MpViewInstances.some((item) => item.selectOwnerComponent?.() === target && item !== target);
     }
     return false;
 };
@@ -170,6 +183,9 @@ export const getElementId = (vm: any): string => {
     }
     if (BUILD_TARGET === 'xhs') {
         return vm.nodeId || vm.pageId;
+    }
+    if (BUILD_TARGET === 'swan') {
+        return vm.nodeId || vm.__wcMockId__;
     }
     // TODO: 其他渠道
     return '';
