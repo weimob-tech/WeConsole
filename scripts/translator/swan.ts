@@ -23,6 +23,26 @@ const translatorAttr = (attr: FxNode, node: FxNode) => {
         attr.content = `${attr.content.substring(0, attr.content.length - 4)}.sjs`;
         return;
     }
+
+    if (node.name === 'template' && attr.name === 'data') {
+        let content = (attr.content as string).trim();
+        content = content.substring(2, content.length - 2);
+        if (content.startsWith('...')) {
+            return;
+        }
+        const newContent = content
+            .split(',')
+            .reduce((sum: string[], item) => {
+                const arr = item.trim().split(':');
+                if (arr.length) {
+                    sum.push(`${arr[0]}:${arr[1] || arr[0]}`);
+                }
+                return sum;
+            }, [])
+            .join(', ');
+        // 百度手动添加大括号
+        attr.content = `{{ {${newContent}} }}`;
+    }
 };
 
 const loopTranslator = (nodes: FxNode[]) => {
