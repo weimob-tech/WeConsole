@@ -263,7 +263,8 @@ const parseConsoleItem = (item: any, index: number, sum: MpConsoleMaterialItem[]
     if (item === undefined || item === null) {
         sum.push({
             type: 'nail',
-            index
+            index,
+            content: String(item)
         });
         return;
     }
