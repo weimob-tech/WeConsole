@@ -1,4 +1,4 @@
-import { toHump, isApp, getMpViewType, getWcControlMpViewInstances } from '@/main/modules/util';
+import { toHump, isApp, getMpViewType, getWcControlMpViewInstances, setPageMockId } from '@/main/modules/util';
 import type { MpAttrNode, MpElement } from '@/types/element';
 import {
     getCurrentAppId,
@@ -185,6 +185,7 @@ export const getElementId = (vm: any): string => {
         return vm.nodeId || vm.pageId;
     }
     if (BUILD_TARGET === 'swan') {
+        setPageMockId(vm);
         return vm.nodeId || vm.__wcMockId__;
     }
     // TODO: 其他渠道
