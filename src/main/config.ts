@@ -8,7 +8,7 @@ import { uuid } from '@mpkit/util';
 import { EventEmitter } from '@/main/modules/event-emitter';
 import type { MpProduct } from '@/types/product';
 import { MpApiCategoryMap, reportCategoryMapToList } from '@/main/modules/category';
-import { getApiVar } from 'cross-mp-power';
+import { getGlobalObject } from 'cross-mp-power';
 
 const FinalConfig: Partial<MpUIConfig> = {
     ignoreHookApiNames: ['nextTick'],
@@ -32,7 +32,7 @@ export const setUIConfig = (config: Partial<MpUIConfig>) => {
         FinalConfig.globalObject = oldGlobal;
     }
     if (FinalConfig.globalObject && NativeGlobalKey) {
-        const g = getNativeGlobal();
+        const g = getGlobalObject();
         const old = g[NativeGlobalKey];
         delete g[NativeGlobalKey];
         Object.assign(FinalConfig.globalObject, old);
@@ -65,41 +65,13 @@ export const removeCustomAction = (actionId: string) => {
     }
 };
 
-const getNativeGlobal = (() => {
-    let res;
-    return function g(this: any) {
-        if (res) {
-            return res;
-        }
-        let apiVar;
-        if (typeof global === 'object' && global) {
-            res = global;
-        } else if (typeof globalThis === 'object' && globalThis) {
-            res = globalThis;
-        } else if (typeof this === 'object' && this) {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            res = this;
-        } else if ((apiVar = getApiVar())) {
-            apiVar.__wcGlobal__ = apiVar.__wcGlobal__ || {};
-            res = apiVar.__wcGlobal__;
-        } else if (typeof getApp === 'function') {
-            const app = getApp({ allowDefault: true });
-            app.__wcGlobal__ = app.__wcGlobal__ || {};
-            res = app.__wcGlobal__;
-        } else {
-            res = {};
-        }
-        return res;
-    };
-})();
-
 let NativeGlobalKey;
 
 const getGlobal = () => {
     if (typeof FinalConfig.globalObject === 'object' && FinalConfig.globalObject) {
         return FinalConfig.globalObject;
     }
-    const g = getNativeGlobal();
+    const g = getGlobalObject();
     NativeGlobalKey = NativeGlobalKey || uuid();
     if (!g[NativeGlobalKey]) {
         g[NativeGlobalKey] = {};
