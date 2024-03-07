@@ -1,1 +1,6 @@
-{}
+{
+    "component": true,
+    "usingComponents": {
+        "demo2": "../demo2/index"
+    }
+}
