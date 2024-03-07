@@ -58,7 +58,7 @@
     },
     "homepage": "https://github.com/weimob-tech/WeConsole#readme",
     "devDependencies": {
-        "@cross-virtual-list/mp-wx": "0.3.1",
+        "@cross-virtual-list/mp-wx": "0.3.2",
         "typescript": "^5.1.6",
         "@babel/core": "^7.22.9",
         "@babel/preset-env": "^7.22.9",
@@ -102,12 +102,12 @@
         "watch": "^1.0.2"
     },
     "dependencies": {
-        "@cross-virtual-list/core": "0.3.1",
-        "@cross-virtual-list/types": "0.3.1",
+        "@cross-virtual-list/core": "0.3.2",
+        "@cross-virtual-list/types": "0.3.2",
         "@mpkit/func-helper": "^1.1.2",
         "@mpkit/types": "^1.1.2",
         "@mpkit/util": "^1.1.2",
-        "cross-mp-power": "0.2.0",
+        "cross-mp-power": "0.2.1",
         "typescript-mp-component": "0.1.1"
     }
 }
