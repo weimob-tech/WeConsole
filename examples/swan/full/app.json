@@ -1,0 +1,9 @@
+{
+    "pages": ["pages/index/index"],
+    "window": {
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "WeConsole示例",
+        "backgroundTextStyle": "light"
+    }
+}
