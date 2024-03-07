@@ -199,7 +199,7 @@ export class Hooker implements IHooker {
             }
 
             if (BUILD_TARGET === 'swan') {
-                swan = target;
+                setFail = true;
             }
 
             if (BUILD_TARGET === 'tt') {
@@ -226,9 +226,10 @@ export class Hooker implements IHooker {
                 return;
             }
             try {
-                Object.defineProperty(oldWx, prop, {
-                    value: val
-                });
+                if (oldWx[prop] === val) {
+                    return;
+                }
+                setProp(oldWx, prop, val);
             } catch (error) {
                 console.error(`${BUILD_TARGET}.${prop}重写失败`, error);
             }

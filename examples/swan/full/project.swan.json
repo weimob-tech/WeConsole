@@ -8,10 +8,10 @@
             "enhance": true,
             "quickPreview": true,
             "quickCompile": false,
-            "useThread": false
+            "useThread": true
         },
         "forceChanged": {},
-        "useOldCompiler": true
+        "useOldCompiler": false
     },
     "project-create-info": {
         "dev-tool-version": "4.33.0-rc",
