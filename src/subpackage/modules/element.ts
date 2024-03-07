@@ -136,7 +136,7 @@ const isPageChild = (component: any, page: any): boolean => {
         return component.ownerComponent === page;
     }
     if (BUILD_TARGET === 'swan') {
-        return component.pageinstance === page;
+        return component.pageinstance === page && !component.ownerId;
     }
     if (supportSelectOwnerComponent()) {
         return component.selectOwnerComponent() === page;
