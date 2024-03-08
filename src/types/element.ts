@@ -9,7 +9,6 @@ export interface MpElement extends MpNode {
     attrs: MpAttrNode[];
     hasChild?: boolean;
     children?: MpElement[];
-    group?: boolean;
     open?: boolean;
     path?: string[];
 }

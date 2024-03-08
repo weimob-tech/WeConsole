@@ -8,46 +8,6 @@ import {
 } from 'cross-mp-power';
 import type { MpViewInstance } from 'typescript-mp-component';
 
-const getGroup = (children: MpElement[]): MpElement[] => {
-    const map: { [prop: string]: MpElement } = {};
-    const res: MpElement[] = [];
-    children.forEach((item: MpElement) => {
-        if (!map[item.name]) {
-            const el: MpElement = {
-                id: item.name,
-                name: item.name,
-                group: true,
-                attrs: [
-                    {
-                        name: 'count',
-                        content: '0'
-                    },
-                    {
-                        name: 'is',
-                        content: item.attrs?.find((it) => it.name === 'is')?.content
-                    }
-                ],
-                children: []
-            };
-            res.push(el);
-            map[item.name] = el;
-        }
-        const attrs = map[item.name].attrs;
-        if (parseInt(attrs[0].content as string) < 1) {
-            attrs[0].content = String(parseInt(attrs[0].content as string) + 1);
-            map[item.name].children?.push(item);
-        }
-    });
-    res.forEach((item, index) => {
-        if (item.attrs?.[0].content === '1') {
-            res[index] = (item.children as MpElement[])[0];
-        } else {
-            item.attrs?.shift();
-        }
-    });
-    return res;
-};
-
 const uniqFilter = <T = any>(list: Array<T | undefined>, filter: (item: T | undefined) => boolean) => {
     const map = new Map();
     return list.reduce((sum: T[], item) => {
@@ -72,7 +32,7 @@ const getComponentChildren = (component) => {
     return uniqFilter(getWcControlMpViewInstances(), (item) => isComponentChild(item, component));
 };
 
-export const getChildrenElements = (vw: any, group?: string, getPages?: () => any[]): Promise<MpElement[]> => {
+export const getChildrenElements = (vw: any, getPages?: () => any[]): Promise<MpElement[]> => {
     let children: MpViewInstance[];
 
     if (isApp(vw)) {
@@ -84,12 +44,7 @@ export const getChildrenElements = (vw: any, group?: string, getPages?: () => an
         children = getComponentChildren(vw);
     }
 
-    return Promise.all(children.map((item) => getElement(item))).then((list) => {
-        if (group) {
-            return list;
-        }
-        return getGroup(list);
-    });
+    return Promise.all(children.map((item) => getElement(item)));
 };
 
 export const getElement = (vw: any): MpElement => {
@@ -145,6 +100,9 @@ const isPageChild = (component: any, page: any): boolean => {
 };
 
 const isComponentChild = (component: any, parentComponent: any) => {
+    if (component === parentComponent) {
+        return false;
+    }
     if (BUILD_TARGET === 'xhs') {
         return component.ownerComponent === parentComponent;
     }

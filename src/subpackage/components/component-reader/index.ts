@@ -56,16 +56,14 @@ class ComponentReader extends MpComponent<Data, NonNullable<unknown>> {
                     resolve(mpData);
                     return;
                 }
-                getChildrenElements(getApp(), undefined, this.$mx.Tool.$wcUIConfig.componentPagesGetter).then(
-                    (children) => {
-                        children.forEach((item) => {
-                            item.path = [item.id];
-                        });
-                        mpData['root.children'] = children;
-                        mpData['root.open'] = true;
-                        return resolve(mpData);
-                    }
-                );
+                getChildrenElements(getApp(), this.$mx.Tool.$wcUIConfig.componentPagesGetter).then((children) => {
+                    children.forEach((item) => {
+                        item.path = [item.id];
+                    });
+                    mpData['root.children'] = children;
+                    mpData['root.open'] = true;
+                    return resolve(mpData);
+                });
                 return;
             }
             let currentChildren: MpElement[] = [];
@@ -78,7 +76,7 @@ class ComponentReader extends MpComponent<Data, NonNullable<unknown>> {
                     rootChildren = this.data.root.children;
                     return Promise.resolve(rootChildren);
                 }
-                return getChildrenElements(getApp(), undefined, this.$mx.Tool.$wcUIConfig.componentPagesGetter).then(
+                return getChildrenElements(getApp(), this.$mx.Tool.$wcUIConfig.componentPagesGetter).then(
                     (children) => {
                         children.forEach((item) => {
                             item.path = [item.id];
@@ -105,8 +103,7 @@ class ComponentReader extends MpComponent<Data, NonNullable<unknown>> {
                     if (readyIndex === -1) {
                         return resolve(mpData);
                     }
-                    const readyItem = currentChildren[readyIndex];
-                    const ins = readyItem.group ? {} : !index ? findPageIns(p) : findComponentIns(p);
+                    const ins = !index ? findPageIns(p) : findComponentIns(p);
                     if (!ins) {
                         return resolve(mpData);
                     }
@@ -117,11 +114,7 @@ class ComponentReader extends MpComponent<Data, NonNullable<unknown>> {
                         return resolve(mpData);
                     }
 
-                    getChildrenElements(
-                        ins,
-                        readyItem.group ? readyItem.attrs.find((at) => at.name === 'is')?.content || '' : '',
-                        this.$mx.Tool.$wcUIConfig.componentPagesGetter
-                    ).then((children) => {
+                    getChildrenElements(ins, this.$mx.Tool.$wcUIConfig.componentPagesGetter).then((children) => {
                         mpPath += `[${readyIndex}].children`;
                         if (!children.length) {
                             resolve(mpData);
