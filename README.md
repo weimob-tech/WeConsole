@@ -18,7 +18,7 @@
 -   ✅ 跨平台
     -   ✅ 微信小程序
     -   ✅ 支付宝小程序
-    -   🚫 百度小程序
+    -   ✅ 百度小程序
     -   🚫 QQ 小程序
     -   🚫 字节跳动小程序
     -   🚫 快手小程序
@@ -56,6 +56,7 @@ npm i weconsole -S
 -   `微信小程序`：请将`dist/full`目录中的文件拷贝至项目目录中；
 -   `支付宝小程序`：请将`dist/alipay/full`目录中的文件拷贝至项目目录中；
 -   `小红书小程序`：请将`dist/xhs/full`目录中的文件拷贝至项目目录中；
+-   `百度小程序`：请将`dist/swan/full`目录中的文件拷贝至项目目录中；
 
 ## 3、引用
 
@@ -94,6 +95,16 @@ import 'weconsole/dist/xhs/npm/main/init';
 
 // 普通方式引用
 import '{复制后的【dist/xhs/full】的路径}/main/init';
+```
+
+-   `百度小程序`引用方式：
+
+```javascript
+// NPM方式引用
+import 'weconsole/dist/swan/npm/main/init';
+
+// 普通方式引用
+import '{复制后的【dist/swan/full】的路径}/main/init';
 ```
 
 引入`main/init`后，就是默认将 App、Page、Component、Api、Console 全部重写监控！如果想按需重写，可以使用如下方式进行：
@@ -164,6 +175,20 @@ showWeConsole();
 }
 ```
 
+-   `百度小程序`引用方式：
+
+```javascript
+// NPM方式引用
+"usingComponents": {
+    "weconsole": "weconsole/dist/swan/npm/subpackage/components/main/index"
+}
+
+// 普通方式引用
+"usingComponents": {
+    "weconsole": "{复制后的【dist/swan/full】的路径}/subpackage/components/main/index"
+}
+```
+
 然后在小程序视图层的`xml`文件中使用`<weconsole>`标签进行初始化：
 
 > 可以使用 weconsole 提供的命令行工具一键批量插入标签，参考 **【5、一键注入】**
@@ -203,6 +228,9 @@ properties: {
 -   小红书小程序：
     -   主包文件：`dist/xhs/{full|npm}/main/*`
     -   分包文件：`dist/xhs/{full|npm}/subpackage/*`
+-   百度小程序：
+    -   主包文件：`dist/swan/{full|npm}/main/*`
+    -   分包文件：`dist/swan/{full|npm}/subpackage/*`
 
 ## 5、一键注入
 
@@ -229,8 +257,8 @@ interface InjectConfig {
      * full: 以全依赖引用的方式注入，无需开发者工具主动编译就可使用，缺点是可能存在依赖包被重复打包代码的问题；
      */
     mode?: 'npm' | 'full';
-    /** 注入的小程序项目属于哪个平台？ */
-    platform?: 'wx' | 'alipay' | 'xhs';
+    /** 注入的小程序项目属于哪个平台？不传时，自动根据目录中的文件特征判断 */
+    platform?: 'wx' | 'alipay' | 'xhs' | 'swan';
     /** 注入weconsole标签时传入的fullTop属性值 */
     fullTop?: string;
     /** 注入weconsole标签时传入的adapFullTop属性值 */
@@ -594,10 +622,30 @@ WeConsole 使用 [MIT](./LICENSE) 协议.
 <details>
 <summary>更新记录：</summary>
 
+-   v1.6.0
+
+    -   功能升级
+        -   支持`百度`小程序
+        -   优化`Component`面板
+            -   组件树不在使用 group 方式进行分组显示
+            -   点击样式优化
+            -   整体组件数子节点查询优化
+        -   一键注入
+            -   支持注入`百度`小程序
+    -   修复 BUG
+
+        -   修复支付宝组件注册时没写 created 等生命周期函数时，在组件树中看不到的问题
+        -   修复支付宝组件树子节点判断问题
+        -   修复 wcconsole_xy storage 拿到空值时 icon 看不到的问题
+        -   修复 createSelectorQuery 调用导致 Api 面板虚拟列表方法调用死循环的问题
+
+    -   其他
+        -   添加`百度`小程序示例代码
+
 -   v1.5.0
 
     -   功能升级
-        -   支持`小红书`平台
+        -   支持`小红书`小程序
         -   优化`Console`面板
             -   函数类型数据样式优化
             -   非 object 类型数据直接展示，不使用`json-viewer`组件
