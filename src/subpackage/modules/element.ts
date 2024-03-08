@@ -84,6 +84,9 @@ export const getElement = (vw: any): MpElement => {
 };
 
 const isPageChild = (component: any, page: any): boolean => {
+    if (component === page || isApp(component)) {
+        return false;
+    }
     if (BUILD_TARGET === 'qq') {
         return component.__wxWebviewId__ && page.__wxWebviewId__ && component.__wxWebviewId__ === page.__wxWebviewId__;
     }
@@ -100,7 +103,7 @@ const isPageChild = (component: any, page: any): boolean => {
 };
 
 const isComponentChild = (component: any, parentComponent: any) => {
-    if (component === parentComponent) {
+    if (component === parentComponent || isApp(component) || isPage(component)) {
         return false;
     }
     if (BUILD_TARGET === 'xhs') {
