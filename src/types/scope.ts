@@ -37,4 +37,5 @@ export interface WeConsoleScope {
     CanvasContext?: any;
     CanvasContextFail?: boolean;
     apiCallMark?: string;
+    pagePlusId?: number;
 }

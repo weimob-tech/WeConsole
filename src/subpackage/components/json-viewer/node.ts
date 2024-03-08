@@ -2,6 +2,7 @@ import type { MpComponentProperties } from 'typescript-mp-component';
 import { MpComponent } from 'typescript-mp-component';
 import { JSONType } from '@/types/json';
 import { registerClassComponent } from '@/sub/mixins/component';
+import type { MpEvent } from '@/types/view';
 
 interface Props {
     data: {
@@ -21,6 +22,18 @@ class JsonNode extends MpComponent<Record<string, never>, Props> {
         smallFontSize: Number,
         outerClass: String
     };
+    tapRow(e: MpEvent) {
+        if (e.currentTarget.dataset.tv === 'compute') {
+            return;
+        }
+        this.tap();
+    }
+    tapChunkRow(e) {
+        if (e.currentTarget.dataset.tv !== 'compute') {
+            return;
+        }
+        this.tapChunk();
+    }
     tap() {
         this.triggerEvent('toggle', {
             open: !this.data.data.open,

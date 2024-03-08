@@ -1,6 +1,5 @@
-import { toHump, isApp, getMpViewType, getWcControlMpViewInstances } from '@/main/modules/util';
+import { toHump, isApp, getMpViewType, getWcControlMpViewInstances, setPageMockId } from '@/main/modules/util';
 import type { MpAttrNode, MpElement } from '@/types/element';
-import { uniq } from './util';
 import {
     getCurrentAppId,
     getCurrentAppVersion,
@@ -9,44 +8,15 @@ import {
 } from 'cross-mp-power';
 import type { MpViewInstance } from 'typescript-mp-component';
 
-const getGroup = (children: MpElement[]): MpElement[] => {
-    const map: { [prop: string]: MpElement } = {};
-    const res: MpElement[] = [];
-    children.forEach((item: MpElement) => {
-        if (!map[item.name]) {
-            const el: MpElement = {
-                id: item.name,
-                name: item.name,
-                group: true,
-                attrs: [
-                    {
-                        name: 'count',
-                        content: '0'
-                    },
-                    {
-                        name: 'is',
-                        content: item.attrs?.find((it) => it.name === 'is')?.content
-                    }
-                ],
-                children: []
-            };
-            res.push(el);
-            map[item.name] = el;
+const uniqFilter = <T = any>(list: Array<T | undefined>, filter: (item: T | undefined) => boolean) => {
+    const map = new Map();
+    return list.reduce((sum: T[], item) => {
+        if (item && filter(item) && !map.has(item)) {
+            map.set(item, 1);
+            sum.push(item);
         }
-        const attrs = map[item.name].attrs;
-        if (parseInt(attrs[0].content as string) < 1) {
-            attrs[0].content = String(parseInt(attrs[0].content as string) + 1);
-            map[item.name].children?.push(item);
-        }
-    });
-    res.forEach((item, index) => {
-        if (item.attrs?.[0].content === '1') {
-            res[index] = (item.children as MpElement[])[0];
-        } else {
-            item.attrs?.shift();
-        }
-    });
-    return res;
+        return sum;
+    }, []);
 };
 
 const isPage = (vm) => {
@@ -54,51 +24,27 @@ const isPage = (vm) => {
     return getMpViewType(vm) === 'Page';
 };
 
-// 只有不支持selectOwnerComponent时才会调用此方法
-const getPageAllChildren = (page) => {
-    return getWcControlMpViewInstances().filter((item) => item !== page && !isApp(item) && isPageChild(item, page));
+const getPageChildren = (page) => {
+    return uniqFilter(getWcControlMpViewInstances(), (item) => isPageChild(item, page));
 };
 
-export const getChildrenElements = (vw: any, group?: string, getPages?: () => any[]): Promise<MpElement[]> => {
-    const vwType = getMpViewType(vw);
-    if (vwType === 'App') {
+const getComponentChildren = (component) => {
+    return uniqFilter(getWcControlMpViewInstances(), (item) => isComponentChild(item, component));
+};
+
+export const getChildrenElements = (vw: any, getPages?: () => any[]): Promise<MpElement[]> => {
+    let children: MpViewInstance[];
+
+    if (isApp(vw)) {
         const pages = (getPages || getCurrentPages)() as any[];
-        if (!pages || !pages.length) {
-            return Promise.resolve([]);
-        }
-        return Promise.all(pages.map((item) => getElement(item)));
+        children = pages || [];
+    } else if (isPage(vw)) {
+        children = getPageChildren(vw);
+    } else {
+        children = getComponentChildren(vw);
     }
 
-    let children: MpViewInstance[] = [];
-    if (BUILD_TARGET !== 'xhs' && !supportSelectOwnerComponent()) {
-        if (vwType === 'Component') {
-            children = [];
-        } else if (isPage(vw)) {
-            children = getPageAllChildren(vw);
-        }
-    }
-
-    if (BUILD_TARGET === 'xhs' || supportSelectOwnerComponent()) {
-        const MpViewInstances = getWcControlMpViewInstances();
-        children = uniq(
-            MpViewInstances.filter((item) => {
-                if (group) {
-                    return item.is === group;
-                }
-                if (BUILD_TARGET === 'xhs') {
-                    return item !== vw && (item as any).ownerComponent && (item as any).ownerComponent === vw;
-                }
-                return item.selectOwnerComponent?.() === vw;
-            })
-        );
-    }
-
-    return Promise.all(children.map((item) => getElement(item))).then((list) => {
-        if (group) {
-            return list;
-        }
-        return getGroup(list);
-    });
+    return Promise.all(children.map((item) => getElement(item)));
 };
 
 export const getElement = (vw: any): MpElement => {
@@ -138,25 +84,53 @@ export const getElement = (vw: any): MpElement => {
 };
 
 const isPageChild = (component: any, page: any): boolean => {
+    if (component === page || isApp(component)) {
+        return false;
+    }
     if (BUILD_TARGET === 'qq') {
         return component.__wxWebviewId__ && page.__wxWebviewId__ && component.__wxWebviewId__ === page.__wxWebviewId__;
     }
     if (BUILD_TARGET === 'xhs') {
         return component.ownerComponent === page;
     }
+    if (BUILD_TARGET === 'swan') {
+        return component.pageinstance === page && !component.ownerId;
+    }
+    if (supportSelectOwnerComponent()) {
+        return component.selectOwnerComponent() === page;
+    }
+    return true;
+};
+
+const isComponentChild = (component: any, parentComponent: any) => {
+    if (component === parentComponent || isApp(component) || isPage(component)) {
+        return false;
+    }
+    if (BUILD_TARGET === 'xhs') {
+        return component.ownerComponent === parentComponent;
+    }
+    if (BUILD_TARGET === 'swan') {
+        return component.ownerId === parentComponent.nodeId;
+    }
+    if (supportSelectOwnerComponent()) {
+        return component.selectOwnerComponent() === parentComponent;
+    }
     return false;
 };
 
-export const hasChild = (vw: any): boolean => {
+const hasChild = (target: any): boolean => {
     const MpViewInstances = getWcControlMpViewInstances();
+    if (isPage(target)) {
+        return MpViewInstances.some((item) => item && isPageChild(item, target));
+    }
     if (BUILD_TARGET === 'xhs') {
-        return MpViewInstances.some((item) => (item as any).ownerComponent === vw);
+        return MpViewInstances.some((item) => item && (item as any).ownerComponent === target);
+    }
+    if (BUILD_TARGET === 'swan') {
+        return MpViewInstances.some((item) => item && (item as any).ownerId === target.nodeId);
     }
     if (supportSelectOwnerComponent()) {
-        return MpViewInstances.some((item) => item.selectOwnerComponent?.() === vw && item !== vw);
-    }
-    if (isPage(vw)) {
-        return MpViewInstances.some((item) => isPageChild(item, vw));
+        return MpViewInstances.some((item) => item && item.selectOwnerComponent?.() === target && item !== target);
     }
     return false;
 };
@@ -170,6 +144,10 @@ export const getElementId = (vm: any): string => {
     }
     if (BUILD_TARGET === 'xhs') {
         return vm.nodeId || vm.pageId;
+    }
+    if (BUILD_TARGET === 'swan') {
+        setPageMockId(vm);
+        return vm.nodeId || vm.__wcMockId__;
     }
     // TODO: 其他渠道
     return '';
@@ -225,5 +203,5 @@ export const findPageIns = (id: string): any => {
     return findComponentIns(id);
 };
 export const findComponentIns = (id: string): any => {
-    return getWcControlMpViewInstances().find((item) => getElementId(item) === id);
+    return getWcControlMpViewInstances().find((item) => item && getElementId(item) === id);
 };

@@ -4,6 +4,8 @@ import { MpXmlFileSuffix, ROOT_DIR } from './vars';
 import * as fs from 'fs';
 import * as path from 'path';
 
+type InjectPlatform = 'wx' | 'alipay' | 'xhs' | 'swan';
+
 interface InjectConfig {
     /** 要注入的小程序项目目录 */
     projectDir: string;
@@ -17,7 +19,7 @@ interface InjectConfig {
      */
     mode?: 'npm' | 'full';
     /** 注入的小程序项目属于哪个平台？ */
-    platform?: 'wx' | 'alipay' | 'xhs';
+    platform?: InjectPlatform;
     /** 注入weconsole标签时传入的fullTop属性值 */
     fullTop?: string;
     /** 注入weconsole标签时传入的adapFullTop属性值 */
@@ -34,7 +36,7 @@ interface PlatformDir {
     mainComponentFile: string;
 }
 
-const computeProjectPlatform = (projectDir: string): 'wx' | 'alipay' | 'xhs' | undefined => {
+const computeProjectPlatform = (projectDir: string): InjectPlatform | undefined => {
     if (fs.existsSync(path.join(projectDir, '.mini-ide'))) {
         return 'alipay';
     }
@@ -43,6 +45,9 @@ const computeProjectPlatform = (projectDir: string): 'wx' | 'alipay' | 'xhs' | u
     }
     if (fs.existsSync(path.join(projectDir, 'xhs-sumi'))) {
         return 'xhs';
+    }
+    if (fs.existsSync(path.join(projectDir, '.swan')) || fs.existsSync(path.join(projectDir, 'project.swan.json'))) {
+        return 'swan';
     }
     if (fs.existsSync(path.join(projectDir, 'project.config.json'))) {
         return 'wx';
@@ -76,7 +81,7 @@ const injectAppJSON = (projectDir: string, mainComponentFile: string) => {
     return appJSON;
 };
 
-const injectPages = (config: InjectConfig, appJSON: any, platform: 'wx' | 'alipay' | 'xhs') => {
+const injectPages = (config: InjectConfig, appJSON: any, platform: InjectPlatform) => {
     const { projectDir } = config;
     if (Array.isArray(appJSON.subPackages)) {
         appJSON.subPackages.forEach((item) => {

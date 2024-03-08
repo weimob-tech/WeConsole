@@ -31,7 +31,7 @@
     </block>
     <view wx:elif="{{data.row===true}}" class="json-row {{data.value && data.value.type==='object'&&!data.value.empty?'has-arrow':''}} {{data.open?'open':''}}">
         <view wx:if="{{data.value && data.value.type==='object'&&!data.value.empty}}" class="json-arrow" style="margin-top:{{fontSize*0.42}}rpx;{{data.open?'transform: rotate(90deg) translateX(4rpx) translateY(8rpx);':''}}"></view>
-        <view class="json-row-content" bind:tap="{{data.value.type==='compute'?'':'tap'}}">
+        <view class="json-row-content" data-tv="{{data.value.type}}" bind:tap="tapRow">
             <json-node smallFontSize="{{smallFontSize}}" fontSize="{{fontSize}}" class="json-row-item" wx:if="{{data.prop}}" data="{{data.prop}}"></json-node>
             <json-node smallFontSize="{{smallFontSize}}" fontSize="{{fontSize}}" class="json-row-item" wx:if="{{data.value}}" data="{{data.value}}" bind:toggle="toggle"></json-node>
         </view>
@@ -39,7 +39,7 @@
             <json-node smallFontSize="{{smallFontSize}}" fontSize="{{fontSize}}" wx:for="{{data.tree}}" wx:key="index" data="{{item}}" bind:toggle="toggle"></json-node>
         </view>
     </view>
-    <view wx:else class="json-chunk {{data.type}}" bind:tap="{{data.type==='compute'?'tapChunk':''}}">
+    <view wx:else class="json-chunk {{data.type}}" data-tv="{{data.type}}" bind:tap="tapChunkRow">
         <template is="json-chunk-left" data="{{data, fontSize, smallFontSize}}"></template>
         <view wx:if="{{data.content}}" class="json-content {{data.prop?'jn-prop':''}} {{data.className||''}} {{data.protected?'protected':''}} {{data.type?data.type:''}}" style="font-size:{{data.type==='compute'?smallFontSize:fontSize}}rpx;">{{data.content}}</view>
         <template is="json-chunk-right" data="{{data, fontSize, smallFontSize}}"></template>

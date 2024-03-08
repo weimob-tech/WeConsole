@@ -42,7 +42,7 @@ interface Data {
     gridSelected: Record<string, string[]>;
 }
 
-class CustomActionComponent extends MpComponent<Data> {
+class CustomActionComponent extends MpComponent<Data, Props> {
     $mx = {
         Tool: new ToolMixin<Data>()
     };
@@ -132,6 +132,33 @@ class CustomActionComponent extends MpComponent<Data> {
                 });
             }
         });
+
+        if (BUILD_TARGET === 'swan') {
+            // 目前试验证明百度template内不支持bind自定义事件，所以使用ebus监听
+            this.$mx.Tool.$wcOn(
+                'DataTableReady',
+                (t, data: (DynamicTableComponentExports | RegularTableComponentExports) & { from: string }) => {
+                    // {{selfHash}}_CustomActionTable_{{action}}_{{caseButton.id}}
+                    if (data.from.startsWith(`${this.data.selfHash}_CustomActionTable_${this.data.action}`)) {
+                        const [, , , caseId] = data.from.split('_');
+                        this.fireGridReady(caseId, data);
+                        return;
+                    }
+                }
+            );
+
+            this.$mx.Tool.$wcOn(
+                'DataTableInteract',
+                (t, data: { type: string; id: string; detail?: any } & { from: string }) => {
+                    // {{selfHash}}_CustomActionTable_{{action}}_{{caseButton.id}}
+                    if (data.from.startsWith(`${this.data.selfHash}_CustomActionTable_${this.data.action}`)) {
+                        const [, , , caseId] = data.from.split('_');
+                        this.fireItemInteractEvent(caseId, data);
+                        return;
+                    }
+                }
+            );
+        }
     }
     attached() {
         this.setAction();
@@ -226,7 +253,7 @@ class CustomActionComponent extends MpComponent<Data> {
             return;
         }
         if (caseIndex === -1) {
-            caseIndex = this.data.caseList.findIndex((item) => item.value === caseId);
+            caseIndex = this.data.caseList.findIndex((item) => item.id === caseId);
             if (caseIndex === -1) {
                 return;
             }
@@ -437,27 +464,30 @@ class CustomActionComponent extends MpComponent<Data> {
             }
         }
     }
-    onItemInteractEvent(e: Required<MpEvent<{ type: string; id: string; detail?: any }>>) {
-        const caseId = e.currentTarget.dataset.case;
-        if (e.detail.type === 'onJSONViewerToggle') {
+    fireItemInteractEvent(caseId: string, detail: { type: string; id: string; detail?: any }) {
+        if (detail.type === 'onJSONViewerToggle') {
             nextTick(() => {
                 const grid = this.caseGrid?.[caseId];
                 if (grid && 'reQueryItemElementSizeByIndex' in grid) {
-                    grid.reQueryItemElementSizeByKey(e.detail.id);
+                    grid.reQueryItemElementSizeByKey(detail.id);
                 }
             });
             return;
         }
-        if (e.detail.type === 'tapRow') {
+        if (detail.type === 'tapRow') {
             this.$mx.Tool.$updateData({
-                [`gridSelected.${caseId}`]: [e.detail.id]
+                [`gridSelected.${caseId}`]: [detail.id]
             });
             return;
         }
-        if (e.detail.type === 'longpressRow' || e.detail.type === 'longpressCell') {
-            this.longpressGridCell(caseId, e.detail.id, (e.detail as any).colIndex);
+        if (detail.type === 'longpressRow' || detail.type === 'longpressCell') {
+            this.longpressGridCell(caseId, detail.id, (detail as any).colIndex);
             return;
         }
+    }
+    onItemInteractEvent(e: Required<MpEvent<{ type: string; id: string; detail?: any }>>) {
+        const caseId = e.currentTarget.dataset.case;
+        this.fireItemInteractEvent(caseId, e.detail);
     }
     longpressGridCell(caseId: string, rowId: string, colIndex: number) {
         this.$mx.Tool.$updateData({
@@ -530,8 +560,7 @@ class CustomActionComponent extends MpComponent<Data> {
             return fullRow;
         }
     }
-    gridReady(e: Required<MpEvent<DynamicTableComponentExports | RegularTableComponentExports>>) {
-        const caseId = e.currentTarget.dataset.case;
+    fireGridReady(caseId: string, gridExports: DynamicTableComponentExports | RegularTableComponentExports) {
         const caseItem = this.getCase(caseId);
         if (!caseItem) {
             return;
@@ -539,12 +568,16 @@ class CustomActionComponent extends MpComponent<Data> {
         if (!this.caseGrid) {
             this.caseGrid = {};
         }
-        const grid = e.detail;
+        const grid = gridExports;
         this.caseGrid[caseId] = grid;
         grid.onJSONViewerReady((e: TableComponentJSONViewerReadyEvent) => {
             this.setCaseTableJSONTarget(caseId, e.current);
         });
         this.syncCaseTableData(caseId);
+    }
+    gridReady(e: Required<MpEvent<DynamicTableComponentExports | RegularTableComponentExports>>) {
+        const caseId = e.currentTarget.dataset.case;
+        this.fireGridReady(caseId, e.detail);
     }
 }
 

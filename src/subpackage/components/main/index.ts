@@ -150,6 +150,9 @@ class MainComponent extends MpComponent {
         if (BUILD_TARGET === 'my') {
             return (this as any).$page?.$id || '';
         }
+        if (BUILD_TARGET === 'swan') {
+            return getElementId((this as any).pageinstance);
+        }
         return '';
     }
     copyAd() {
@@ -256,6 +259,10 @@ class MainComponent extends MpComponent {
         return new Promise((resolve, reject) => {
             let retryCount = 0;
             const fromQuery = (cb: (val?: any) => void) => {
+                if (BUILD_TARGET === 'swan') {
+                    cb();
+                    return;
+                }
                 const exec = () => {
                     (this as any)
                         .createSelectorQuery()
@@ -288,6 +295,15 @@ class MainComponent extends MpComponent {
                 if (BUILD_TARGET === 'my') {
                     try {
                         const ctx = my.createCanvasContext('canvas');
+                        cb(ctx);
+                    } catch (error) {
+                        cb();
+                    }
+                    return;
+                }
+                if (BUILD_TARGET === 'swan') {
+                    try {
+                        const ctx = swan.createCanvasContext('canvas');
                         cb(ctx);
                     } catch (error) {
                         cb();
@@ -349,7 +365,7 @@ class MainComponent extends MpComponent {
             handPromise = getStorage<{ x: number; y: number }>('wcconsole_xy')
                 .catch(() => Promise.resolve())
                 .then((res) => {
-                    if (res) {
+                    if (res && 'x' in res && 'y' in res) {
                         this.$mx.Tool.$updateData({
                             inited: true,
                             handX: res.x + 'px',

@@ -101,15 +101,6 @@ export const convertStockToInitiatorDesc = (stock: MpStackInfo): string => {
     return 'Script';
 };
 
-export const uniq = <T = any>(list: T[]): T[] => {
-    return list.reduce((sum: T[], item) => {
-        if (sum.indexOf(item) === -1) {
-            sum.push(item);
-        }
-        return sum;
-    }, []);
-};
-
 export const toJSONString = (obj: any, space?: string | number) => {
     const set = new WeakSet();
     return JSON.stringify(

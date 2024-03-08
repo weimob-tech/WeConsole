@@ -1,0 +1,31 @@
+{
+    "appid": "17767960",
+    "setting": {
+        "urlCheck": false
+    },
+    "compilation-args": {
+        "common": {
+            "enhance": true,
+            "quickPreview": true,
+            "quickCompile": false,
+            "useThread": true
+        },
+        "forceChanged": {},
+        "useOldCompiler": false
+    },
+    "project-create-info": {
+        "dev-tool-version": "4.33.0-rc",
+        "date": "3/7/2024"
+    },
+    "host": "baiduboxapp",
+    "swan": {
+        "baiduboxapp": {
+            "swanJsVersion": "3.830.1",
+            "extensionJsVersion": "1.21.2"
+        }
+    },
+    "projectname": "WeConsole示例",
+    "preview": {
+        "packageId": 1710583
+    }
+}

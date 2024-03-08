@@ -179,6 +179,13 @@ export class TableComponent<
             this.$mx.Vl.$vlSetList(this.data.data);
         }
         this.triggerEvent('ready', e.detail);
+        if (BUILD_TARGET === 'swan') {
+            // 目前试验证明百度template内不支持bind自定义事件，所以使用ebus发射
+            this.$mx.Tool.$wcEmit('DataTableReady', {
+                from: this.data.from,
+                ...e.detail
+            });
+        }
     }
     rewriteVlExports(exports: E) {
         Object.keys(exports).forEach((k) => {
@@ -320,6 +327,13 @@ export class TableComponent<
     }
     onItemInteractEvent(e: MpEvent) {
         this.triggerEvent('interact', e.detail);
+        if (BUILD_TARGET === 'swan') {
+            // 目前试验证明百度template内不支持bind自定义事件，所以使用ebus发射
+            this.$mx.Tool.$wcEmit('DataTableInteract', {
+                from: this.data.from,
+                ...e.detail
+            });
+        }
     }
 }
 

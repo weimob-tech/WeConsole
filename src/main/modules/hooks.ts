@@ -2,8 +2,9 @@ import type { MkFuncHook } from '@mpkit/types';
 import { uuid } from '@mpkit/util';
 import type { WeFuncHookState } from '@/types/hook';
 import { HookScope, MethodExecStatus } from '@/types/common';
-import { $$getStack, getWcControlMpViewInstances, isMpViewEvent, log, now } from './util';
+import { $$getStack, isMpViewEvent, log, now, setPageMockId } from './util';
 import { Hooker } from './hooker';
+import { saveView, removeView } from './view-store';
 import { hookApiMethodCallback } from 'cross-mp-power';
 export const FuncIDHook: MkFuncHook<WeFuncHookState> = {
     before(state) {
@@ -144,7 +145,7 @@ const hookSpecMethod = (
 export const MpViewInsCacheSaveHook: MkFuncHook<WeFuncHookState> = {
     before(state) {
         // 将组件实例缓存到全局，便于view取到
-        getWcControlMpViewInstances().push(state.ctx);
+        saveView(state.ctx);
     }
 };
 export const MpViewInsDestroyMarkHook: MkFuncHook<WeFuncHookState> = {
@@ -152,17 +153,15 @@ export const MpViewInsDestroyMarkHook: MkFuncHook<WeFuncHookState> = {
         Object.defineProperty(state.ctx, '__wcDestoryed__', {
             value: true
         });
-        const MpViewInstances = getWcControlMpViewInstances();
-        const index = MpViewInstances.findIndex((item) => item === state.ctx);
-        if (index !== -1) {
-            // 销毁时要从缓存中删除，否则占用内存太严重，后面重构时避免此类设计
-            MpViewInstances.splice(index, 1);
-        }
+        removeView(state.ctx);
     }
 };
 
 export const MpViewInitLifeHook: MkFuncHook<WeFuncHookState> = {
-    before() {
+    before(state) {
+        if (BUILD_TARGET === 'swan') {
+            setPageMockId(state.ctx);
+        }
         // 界面上暂时没有用到setData的地方，先注释重写setData和 triggerEvent的逻辑
         // if (state.ctx.setData || state.ctx.triggerEvent) {
         //     const { controller, scope } = state.state;
@@ -194,6 +193,13 @@ const fillDefaultComponentLife = (spec: any) => {
     const hasLifetimes = typeof spec.lifetimes === 'object' && spec.lifetimes;
     ['created', 'detached'].forEach((life) => {
         if (!hasLifetimes) {
+            if (BUILD_TARGET === 'my') {
+                spec.options = spec.options || {};
+                spec.options.lifetimes = true;
+                spec.lifetimes = spec.lifetimes || {};
+                spec.lifetimes[life] = function WcComponentLifePlaceholder() {};
+                return;
+            }
             spec[life] = spec[life] || function WcComponentLifePlaceholder() {};
             return;
         }

@@ -112,11 +112,13 @@
 
     &.type-json {
         display: inline-block;
+        vertical-align: top;
     }
     &.type-fun {
         display: inline-block;
         font-family: $ft-code;
         font-style: italic;
+        vertical-align: top;
         &:active,
         &:focus {
             background-color: #fff;

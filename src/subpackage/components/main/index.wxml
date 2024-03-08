@@ -14,7 +14,7 @@
         class="fc-modal {{isFullScreenPhone?'fc-adap-scroll':''}} {{visible?'is-show':''}} {{fullScreen?'is-full':''}}"
         style="{{fullScreen&&(isFullScreenPhone?adapFullTop:fullTop)?('top:'+(isFullScreenPhone?adapFullTop:fullTop)+';'):''}}z-index:{{zIndex}};">
         <view class="fc-modal-body">
-            <tabs tabs="{{tabs}}" active="{{activeTabIndex}}" bind:change="setTab">
+            <tabs class="wc-main-tabs" tabs="{{tabs}}" active="{{activeTabIndex}}" bind:change="setTab" style="height:100%">
                 <view slot="headBefore" class="fc-tabs-action" bindtap="toggleZoom">
                     <view class="fc-tabs-zoom wic-{{fullScreen?'compress':'expand'}}">
                         <view class="wic-arrow-1"></view>
@@ -33,7 +33,7 @@
                 <storage-reader wx:if="{{activeTabIndex===3 || tabMountState.s3}}"
                     slot="panel-storage"></storage-reader>
                 <view wx:if="{{activeTabIndex===4 || tabMountState.s4}}" class="fc-tab-panel-reader" slot="panel-other">
-                    <tabs tabs="{{sysTabs.list}}" active="{{activeSysTab}}" size="small" bind:change="changeSysTab">
+                    <tabs tabs="{{sysTabs.list}}" active="{{activeSysTab}}" size="small" bind:change="changeSysTab" style="height:100%">
                         <!-- xhs不支持动态slot，使用此方式做兼容 -->
                         <view wx:if="{{sysTabs.list.length>0}}" class="sys-tab-panel" slot="panel-0">
                             <custom-action wx:if="{{activeSysTab===0 || sysTabMountState.s0}}"
@@ -113,5 +113,5 @@
             </view>
         </view>
     </view>
-    <canvas id="canvas" type="2d" onReady="onCanvasReady" style="display:none;"></canvas>
+    <canvas canvas-id="canvas" id="canvas" type="2d" onReady="onCanvasReady" style="display:none;"></canvas>
 </block>
