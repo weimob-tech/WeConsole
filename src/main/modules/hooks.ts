@@ -193,6 +193,13 @@ const fillDefaultComponentLife = (spec: any) => {
     const hasLifetimes = typeof spec.lifetimes === 'object' && spec.lifetimes;
     ['created', 'detached'].forEach((life) => {
         if (!hasLifetimes) {
+            if (BUILD_TARGET === 'my') {
+                spec.options = spec.options || {};
+                spec.options.lifetimes = true;
+                spec.lifetimes = spec.lifetimes || {};
+                spec.lifetimes[life] = function WcComponentLifePlaceholder() {};
+                return;
+            }
             spec[life] = spec[life] || function WcComponentLifePlaceholder() {};
             return;
         }
