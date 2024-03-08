@@ -48,10 +48,10 @@ const getGroup = (children: MpElement[]): MpElement[] => {
     return res;
 };
 
-const uniqFilter = <T = any>(list: T[], filter: (item: T) => boolean) => {
+const uniqFilter = <T = any>(list: Array<T | undefined>, filter: (item: T | undefined) => boolean) => {
     const map = new Map();
     return list.reduce((sum: T[], item) => {
-        if (filter(item) && !map.has(item)) {
+        if (item && filter(item) && !map.has(item)) {
             map.set(item, 1);
             sum.push(item);
         }
@@ -160,16 +160,16 @@ const isComponentChild = (component: any, parentComponent: any) => {
 const hasChild = (target: any): boolean => {
     const MpViewInstances = getWcControlMpViewInstances();
     if (isPage(target)) {
-        return MpViewInstances.some((item) => isPageChild(item, target));
+        return MpViewInstances.some((item) => item && isPageChild(item, target));
     }
     if (BUILD_TARGET === 'xhs') {
-        return MpViewInstances.some((item) => (item as any).ownerComponent === target);
+        return MpViewInstances.some((item) => item && (item as any).ownerComponent === target);
     }
     if (BUILD_TARGET === 'swan') {
-        return MpViewInstances.some((item) => (item as any).ownerId === target.nodeId);
+        return MpViewInstances.some((item) => item && (item as any).ownerId === target.nodeId);
     }
     if (supportSelectOwnerComponent()) {
-        return MpViewInstances.some((item) => item.selectOwnerComponent?.() === target && item !== target);
+        return MpViewInstances.some((item) => item && item.selectOwnerComponent?.() === target && item !== target);
     }
     return false;
 };
@@ -242,5 +242,5 @@ export const findPageIns = (id: string): any => {
     return findComponentIns(id);
 };
 export const findComponentIns = (id: string): any => {
-    return getWcControlMpViewInstances().find((item) => getElementId(item) === id);
+    return getWcControlMpViewInstances().find((item) => item && getElementId(item) === id);
 };

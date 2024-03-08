@@ -1,8 +1,8 @@
 import type { AnyFunction, WcListFilterHandler } from '@/types/util';
 import type { MpStackInfo } from '@/types/common';
-import { wcScope, wcScopeSingle } from '../config';
-import type { MpViewInstance } from 'typescript-mp-component';
+import { wcScope } from '../config';
 import { getSystemInfo } from 'cross-mp-power';
+import { getViewList } from './view-store';
 
 export const now = (() => {
     let p;
@@ -219,8 +219,9 @@ export const rpxToPx = (rpxVal: number): number => {
 };
 
 /** 获取小程序内weconsole已经监控到的所有的App/Page/Component实例 */
-export const getWcControlMpViewInstances = (): MpViewInstance[] =>
-    wcScopeSingle('MpViewInstances', () => []) as MpViewInstance[];
+export const getWcControlMpViewInstances = () => {
+    return getViewList();
+};
 
 export const setProp = (() => {
     const SupportDesc = typeof Object.getOwnPropertyDescriptor === 'function';
