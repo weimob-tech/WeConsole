@@ -8,5 +8,7 @@
     <view class="action {{requesting?'lock':''}}" bind:tap="callWxMethod" data-method="request">swan.request{{requesting?'(发送中...)':''}}</view>
 </view>
 <demo2></demo2>
+<demo2></demo2>
+<demo2></demo2>
 
 <template is="tp"></template>

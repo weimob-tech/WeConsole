@@ -92,74 +92,47 @@ Component({
                 if (this.data.requesting) {
                     return;
                 }
-                const fire = () => {
+                this.setData({
+                    requesting: true
+                });
+                const done = (res, fail) => {
+                    this.requestType++;
+                    this.requestType = this.requestType > 2 ? 0 : this.requestType;
+                    console[fail ? 'error' : 'log'](`请求：${fail ? '失败' : '成功'}`, res);
                     this.setData({
-                        requesting: true
-                    });
-                    const done = (res, fail) => {
-                        this.requestType++;
-                        this.requestType = this.requestType > 2 ? 0 : this.requestType;
-                        console[fail ? 'error' : 'log'](`请求：${fail ? '失败' : '成功'}`, res);
-                        this.setData({
-                            requesting: false
-                        });
-                    };
-                    const typeConfig = {
-                        0: {
-                            // 请求随机文案，仅供演示，请勿商用，感谢免费接口调用服务商，文档：https://api.uomg.com/doc-rand.avatar.html
-                            url: 'https://api.uomg.com/api/rand.avatar?sort=%E5%A5%B3&format=json',
-                            method: 'GET'
-                        },
-                        1: {
-                            // 请求随机图片，仅供演示，请勿商用，感谢免费接口调用服务商，文档：https://api.uomg.com/doc-rand.qinghua.html
-                            url: 'https://api.uomg.com/api/rand.qinghua',
-                            method: 'POST',
-                            data: {
-                                format: 'json'
-                            }
-                        },
-                        2: {
-                            // 模拟接口报错情况，感谢免费接口调用服务商，文档：https://api.uomg.com/doc-rand.qinghua.html
-                            url: 'https://api.uomg.com/api2222/rand.qinghua22222',
-                            method: 'POST',
-                            data: {
-                                format: 'json'
-                            }
-                        }
-                    };
-                    swan.request({
-                        ...typeConfig[this.requestType],
-                        success: done,
-                        fail: (res) => {
-                            done(res, true);
-                        }
+                        requesting: false
                     });
                 };
-
-                if (swan.getSystemInfoSync().enableDebug || this.enableDebug) {
-                    fire();
-                    return;
-                }
-
-                swan.showModal({
-                    title: '提示',
-                    content:
-                        '由于本小程序属于演示项目，未打开调试时无法正常发送请求，但你仍然可以查看到发送后的结果。为了更好的演示效果你可以选择打开调试，你的选择是？',
-                    showCancel: true,
-                    cancelText: '继续发送',
-                    confirmText: '打开调试',
-                    success: (res) => {
-                        if (res.confirm) {
-                            this.enableDebug = true;
-                            swan.setEnableDebug({
-                                enableDebug: true
-                            });
-                        } else {
-                            fire();
+                const typeConfig = {
+                    0: {
+                        // 请求随机文案，仅供演示，请勿商用，感谢免费接口调用服务商，文档：https://api.uomg.com/doc-rand.avatar.html
+                        url: 'https://api.uomg.com/api/rand.avatar?sort=%E5%A5%B3&format=json',
+                        method: 'GET'
+                    },
+                    1: {
+                        // 请求随机图片，仅供演示，请勿商用，感谢免费接口调用服务商，文档：https://api.uomg.com/doc-rand.qinghua.html
+                        url: 'https://api.uomg.com/api/rand.qinghua',
+                        method: 'POST',
+                        data: {
+                            format: 'json'
+                        }
+                    },
+                    2: {
+                        // 模拟接口报错情况，感谢免费接口调用服务商，文档：https://api.uomg.com/doc-rand.qinghua.html
+                        url: 'https://api.uomg.com/api2222/rand.qinghua22222',
+                        method: 'POST',
+                        data: {
+                            format: 'json'
                         }
                     }
+                };
+                swan.request({
+                    ...typeConfig[this.requestType],
+                    success: done,
+                    fail: (res) => {
+                        done(res, true);
+                    }
                 });
-
                 return;
             }
         }

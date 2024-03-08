@@ -9,10 +9,5 @@ Page({
         swan.setClipboardData({
             data: e.currentTarget.dataset.url
         });
-    },
-    toggleDebug() {
-        swan.setEnableDebug({
-            enableDebug: !this.data.enableDebug
-        });
     }
 });
