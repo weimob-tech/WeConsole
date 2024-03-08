@@ -365,7 +365,7 @@ class MainComponent extends MpComponent {
             handPromise = getStorage<{ x: number; y: number }>('wcconsole_xy')
                 .catch(() => Promise.resolve())
                 .then((res) => {
-                    if (res) {
+                    if (res && 'x' in res && 'y' in res) {
                         this.$mx.Tool.$updateData({
                             inited: true,
                             handX: res.x + 'px',
